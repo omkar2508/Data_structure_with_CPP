@@ -130,167 +130,113 @@ public:
     }
 };
 
-node *insertBT(node *root, int value)
+node *insertnode(node *root, int data)
 {
-    node *newNode = createnode(value);
-    if (root == nullptr)
+    if (root == NULL)
     {
-        root = newNode;
+        root = createnode(data);
+        return root;
+    }
+    if (data <= root->data)
+    {
+        root->left = insertnode(root->left, data);
     }
     else
     {
-        Queue q;
-        q.push(root);
+        root->right = insertnode(root->right, data);
+    }
+    return root;
+}
 
-        while (!q.isEmpty())
+node *minVal(node *root)
+{
+    while (root->left != nullptr)
+    {
+        root = root->left;
+    }
+    return root; // Return the node with the minimum value
+}
+
+node *deleteFromBst(node *root, int val)
+{
+    if (root == NULL)
+    {
+        return root; // Base case: If the tree is empty
+    }
+
+    // Traverse the tree to find the node to delete
+    if (val < root->data)
+    {
+        root->left = deleteFromBst(root->left, val);
+    }
+    else if (val > root->data)
+    {
+        root->right = deleteFromBst(root->right, val);
+    }
+    else
+    {
+        // Node to be deleted is found
+
+        // Case 1: Node with no children (leaf node)
+        if (root->left == NULL && root->right == NULL)
         {
-            node *temp = q.front();
-            q.pop();
+            delete root;
+            return NULL;
+        }
 
-            if (temp->left == nullptr)
-            {
-                temp->left = newNode;
-                return root;
-            }
-            else if (temp->right == nullptr)
-            {
-                temp->right = newNode;
-                return root;
-            }
-            else
-            {
-                q.push(temp->left);
-                q.push(temp->right);
-            }
+        // Case 2: Node with one child (left or right)
+        if (root->left != NULL && root->right == NULL)
+        {
+            node *temp = root->left;
+            delete root;
+            return temp;
+        }
+        if (root->left == NULL && root->right != NULL)
+        {
+            node *temp = root->right;
+            delete root;
+            return temp;
+        }
+
+        // Case 3: Node with two children
+        if (root->left != NULL && root->right != NULL)
+        {
+            // Find the in-order successor (minimum value in the right subtree)
+            node *successor = minVal(root->right);
+            root->data = successor->data; // Replace the value
+            root->right = deleteFromBst(root->right, successor->data); // Delete the successor
         }
     }
     return root;
 }
 
-node *searchNode(node *root, int target)
+void BFS(node *root)
 {
     if (root == nullptr)
     {
-        return nullptr;
-    }
-
-    Queue q;
-    q.push(root);
-    while (!q.isEmpty())
-    {
-        node *temp = q.front();
-        q.pop();
-
-        if (temp->data == target)
-        {
-            return temp;
-        }
-
-        if (temp->left != nullptr)
-        {
-            q.push(temp->left);
-        }
-        if (temp->right != nullptr)
-        {
-            q.push(temp->right);
-        }
-    }
-    return nullptr;
-}
-node *bottom(node *root)
-{
-    if (root == nullptr)
-    {
-        return nullptr;
-    }
-    node *parent = nullptr;
-    Queue q;
-    q.push(root);
-    while (!q.isEmpty())
-    {
-        node *current = q.front();
-        q.pop();
-        if (current->left)
-        {
-            parent = current;
-            q.push(current->left);
-        }
-        if (current->right)
-        {
-            q.push(current->right);
-            parent = current;
-        }
-    }
-    return parent;
-}
-void deleteNode(node *&root, int value)
-{
-    node *nodeToDelete = searchNode(root, value);
-    if (nodeToDelete == nullptr)
-        return;
-
-    node *b_parent = bottom(root);
-    if (b_parent == nullptr)
-    {
-        root = nullptr;
         return;
     }
     else
     {
-        if (b_parent->right)
+        Queue q;
+        q.push(root);
+        while (!q.isEmpty())
         {
-            node *temp = b_parent->right;
-            nodeToDelete->data = b_parent->right->data;
-            b_parent->right = nullptr;
-            delete temp;
-        }
-        else
-        {
-            node *temp = b_parent->left;
-            nodeToDelete->data = b_parent->left->data;
-            b_parent->left = nullptr;
-            delete temp;
+            node *current = q.front();
+            q.pop();
+            cout << current->data << " ";
+            if (current->left != nullptr)
+            {
+                q.push(current->left);
+            }
+            if (current->right != nullptr)
+            {
+                q.push(current->right);
+            }
         }
     }
-    return;
 }
 
-void preorder(node *root)
-{
-    if (root == nullptr)
-    {
-        return;
-    }
-
-    Stack s;
-    s.push(root);
-    node *lastvisited = nullptr;
-    node *current;
-
-    while (!s.isEmpty())
-    {
-        current = s.top();
-        s.pop();
- 
-        if (current->left != nullptr && current->left != lastvisited && current->right != lastvisited)
-        {
-            cout << current->data << " ";
-            s.push(current);
-            s.push(current->left);
-        }
-        else if (current->right != nullptr && current->right != lastvisited)
-        {
-            s.push(current);
-            s.push(current->right);
-        }
-        else if (current->left == nullptr && current->right == nullptr)
-        {
-            cout << current->data << " ";
-        }
-
-        lastvisited = current;
-    }
-}
 void postorder(node *root)
 {
     if (root == nullptr)
@@ -362,28 +308,17 @@ void inorder(node *root)
     }
 }
 
-void BFS(node *root)
+void preorder(node *root)
 {
     if (root == nullptr)
     {
         return;
     }
-
-    Queue q;
-    q.push(root);
-    while (!q.isEmpty())
+    else
     {
-        node *temp = q.front();
-        q.pop();
-        cout << temp->data << " ";
-        if (temp->left)
-        {
-            q.push(temp->left);
-        }
-        if (temp->right)
-        {
-            q.push(temp->right);
-        }
+        cout << root->data << " ";
+        preorder(root->left);
+        preorder(root->right);
     }
 }
 
@@ -420,7 +355,7 @@ int main()
         cout << "3. In-order Traversal\n";
         cout << "4. Pre-order Traversal\n";
         cout << "5. Breadth-First Search (BFS)\n";
-        cout << "6. Delete Node\n";
+        cout<<  "6. Delete Node\n";
         cout << "7. Exit\n";
         cout << "Enter your choice: ";
         choice = getValidatedInt();
@@ -430,7 +365,7 @@ int main()
         case 1:
             cout << "Enter the node value: ";
             node_value = getValidatedInt();
-            root = insertBT(root, node_value);
+            root = insertnode(root, node_value);
             cout << "Node inserted successfully.\n";
             break;
 
@@ -473,7 +408,6 @@ int main()
             }
             break;
 
-        
         case 5:
             if (root == nullptr)
             {
@@ -487,24 +421,17 @@ int main()
             }
             break;
 
-        case 6:
-            if (root == nullptr)
-            {
-                cout << "The tree is empty. Please insert nodes first.\n";
-            }
-            else
-            {
-                cout << "Enter the value to delete: ";
-                node_value=getValidatedInt();
-                deleteNode(root, node_value);
-                cout << "Node deleted successfully.\n";
-            }
-            break;
+       
 
-        case 7: // Exit
-            cout << "Exiting program. Goodbye!\n";
+        case 6: // Exit
+            cout << "Enter the delete node value: ";
+            node_value = getValidatedInt();
+            root = deleteFromBst(root, node_value);
+            cout << "Node deleted successfully.\n";
             break;
-
+        case 7:
+            cout<<"Exit,goodbye\n";
+            break;
         default:
             cout << "Invalid choice. Please try again.\n";
             break;
